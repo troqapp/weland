@@ -1,17 +1,24 @@
 workflows:
   android-build:
-    name: Build Android APK
-    max_build_duration: 60
+    name: Android Build Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m2
     environment:
       vars:
-        JAVA_VERSION: 17
+        JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+        ANDROID_HOME: /opt/android-sdk-linux
     scripts:
-      - name: Install dependencies
+      - name: Set up JDK
         script: |
-          npm install
-      - name: Build Android APK
+          sudo apt-get update
+          sudo apt-get install openjdk-17-jdk
+          java -version
+      - name: Set up Android SDK
         script: |
-          cd android
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+      - name: Build APK
+        script: |
           ./gradlew assembleRelease
     artifacts:
-      - android/app/build/outputs/apk/release/*.apk
+      - build/outputs/**/*.apk
