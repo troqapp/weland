@@ -1,55 +1,155 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { supabase } from '../lib/supabase'
 
-export default function LandingPage() {
+export default function MessagesScreen() {
+  const [conversations, setConversations] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchConversations()
+  }, [])
+
+  const fetchConversations = async () => {
+    // Sample conversations data
+    const sampleConversations = [
+      {
+        id: '1',
+        participant_name: 'Ethan',
+        last_message: 'Hey, how\'s it going?',
+        last_message_at: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        unread_count: 2
+      },
+      {
+        id: '2',
+        participant_name: 'Olivia',
+        last_message: 'Did you see the new designs?',
+        last_message_at: new Date(Date.now() - 3 * 60 * 60 * 1000),
+        unread_count: 1
+      },
+      {
+        id: '3',
+        participant_name: 'Liam',
+        last_message: 'Let\'s catch up later this week.',
+        last_message_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        unread_count: 1
+      },
+      {
+        id: '4',
+        participant_name: 'Sophia',
+        last_message: 'Thanks for sending that over!',
+        last_message_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        unread_count: 1
+      },
+      {
+        id: '5',
+        participant_name: 'Noah',
+        last_message: 'Perfect!',
+        last_message_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        unread_count: 0
+      }
+    ]
+    
+    setConversations(sampleConversations)
+    setLoading(false)
+  }
+
+  const markAsRead = (conversationId) => {
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === conversationId 
+          ? { ...conv, unread_count: 0 }
+          : conv
+      )
+    )
+  }
+
+  const formatTime = (date) => {
+    const messageDate = new Date(date)
+    const now = new Date()
+    const diffHours = (now - messageDate) / (1000 * 60 * 60)
+    
+    if (diffHours < 24) {
+      return messageDate.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      }).toUpperCase().replace(' ', '')
+    } else if (diffHours < 48) {
+      return 'Yesterday'
+    } else {
+      return `${Math.floor(diffHours / 24)}d ago`
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-6">
-      <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-md w-full border border-white/20">
-        <div className="text-5xl text-center mb-3 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent font-bold">
-          ✦
-        </div>
-        <h1 className="text-3xl font-bold text-center text-black mb-2">Weland</h1>
-        <p className="text-gray-600 text-center mb-8 leading-relaxed">
-          Create Your Digital Identity.<br />Join the virtual nation.
-        </p>
-        
-        <div className="bg-blue-50 rounded-xl p-5 mb-6">
-          <div className="flex items-center mb-4">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-              ✓
-            </div>
-            <span className="text-gray-800">Create your digital identity card</span>
-          </div>
-          <div className="flex items-center mb-4">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-              ✓
-            </div>
-            <span className="text-gray-800">Connect with virtual communities</span>
-          </div>
-          <div className="flex items-center mb-4">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-              ✓
-            </div>
-            <span className="text-gray-800">Share posts and engage with others</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-              ✓
-            </div>
-            <span className="text-gray-800">Real-time messaging and alerts</span>
-          </div>
-        </div>
-
-        <Link href="/login" className="block w-full">
-          <button className="w-full bg-black text-white py-4 rounded-xl font-semibold text-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg animate-pulse">
-            Start Now ↗
+    <div className="min-h-screen bg-white">
+      <div className="max-w-2xl mx-auto p-6 pt-16">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Messages</h1>
+          <button className="text-black font-semibold hover:text-gray-700">
+            New
           </button>
-        </Link>
-
-        <div className="mt-6 text-gray-600 text-sm text-center bg-gray-50 py-3 rounded-lg">
-          💡 For best experience, use the mobile app with Expo Go
         </div>
+        
+        {conversations.length > 0 ? (
+          <div className="space-y-1">
+            {conversations.map((conversation) => (
+              <div 
+                key={conversation.id}
+                onClick={() => markAsRead(conversation.id)}
+                className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg cursor-pointer"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold">
+                    {conversation.participant_name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{conversation.participant_name}</h3>
+                    <p className="text-gray-600 text-sm">{conversation.last_message}</p>
+                  </div>
+                </div>
+                
+                <div className="text-right">
+                  <p className="text-xs text-gray-500 mb-1">{formatTime(conversation.last_message_at)}</p>
+                  {conversation.unread_count > 0 && (
+                    <span className="bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {conversation.unread_count}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-bold mb-2">No conversations yet</h2>
+            <p className="text-gray-600 mb-4">Start a conversation with someone!</p>
+            <button className="bg-black text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800">
+              Start New Conversation
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div className="max-w-2xl mx-auto flex justify-around p-4">
+          <Link href="/posts" className="text-gray-600 hover:text-black">
+            📝
+          </Link>
+          <Link href="/alerts" className="text-gray-600 hover:text-black">
+            🔔
+          </Link>
+          <Link href="/" className="text-black font-bold">
+            💬
+          </Link>
+          <Link href="/profile" className="text-gray-600 hover:text-black">
+            👤
+          </Link>
+        </div>
+      </nav>
     </div>
   )
-    }
+}
