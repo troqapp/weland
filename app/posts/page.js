@@ -109,4 +109,4 @@ export default function PostsScreen() {
       </div>
     </div>
   )
-        }
+}
