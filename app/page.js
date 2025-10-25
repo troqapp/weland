@@ -1,17 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { supabase } from '../lib/supabase'
 
 export default function MessagesScreen() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchConversations()
-  }, [])
-
-  const fetchConversations = async () => {
     // Sample conversations data
     const sampleConversations = [
       {
@@ -53,7 +48,7 @@ export default function MessagesScreen() {
     
     setConversations(sampleConversations)
     setLoading(false)
-  }
+  }, [])
 
   const markAsRead = (conversationId) => {
     setConversations(prev => 
@@ -81,6 +76,17 @@ export default function MessagesScreen() {
     } else {
       return `${Math.floor(diffHours / 24)}d ago`
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading messages...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -136,17 +142,21 @@ export default function MessagesScreen() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
         <div className="max-w-2xl mx-auto flex justify-around p-4">
-          <Link href="/posts" className="text-gray-600 hover:text-black">
-            📝
+          <Link href="/posts" className="flex flex-col items-center text-gray-600 hover:text-black">
+            <span className="text-2xl">📝</span>
+            <span className="text-xs mt-1">Posts</span>
           </Link>
-          <Link href="/alerts" className="text-gray-600 hover:text-black">
-            🔔
+          <Link href="/alerts" className="flex flex-col items-center text-gray-600 hover:text-black">
+            <span className="text-2xl">🔔</span>
+            <span className="text-xs mt-1">Alerts</span>
           </Link>
-          <Link href="/" className="text-black font-bold">
-            💬
+          <Link href="/" className="flex flex-col items-center text-black font-bold">
+            <span className="text-2xl">💬</span>
+            <span className="text-xs mt-1">Messages</span>
           </Link>
-          <Link href="/profile" className="text-gray-600 hover:text-black">
-            👤
+          <Link href="/profile" className="flex flex-col items-center text-gray-600 hover:text-black">
+            <span className="text-2xl">👤</span>
+            <span className="text-xs mt-1">Profile</span>
           </Link>
         </div>
       </nav>
